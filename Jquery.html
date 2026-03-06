@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Memory Matching Game</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<style>
+body{
+font-family:Arial;
+text-align:center;
+background:#0f172a;
+color:white;
+}
+
+#gameHeader{
+margin-bottom:20px;
+}
+
+#gameBoard{
+width:400px;
+margin:auto;
+display:flex;
+flex-wrap:wrap;
+}
+
+.card{
+width:80px;
+height:80px;
+margin:5px;
+background-color:#333;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:40px;
+color:#fff;
+cursor:pointer;
+border-radius:8px;
+}
+
+.card.flipped{
+background-color:white;
+color:#333;
+}
+
+#winMessage{
+display:none;
+margin-top:20px;
+font-size:24px;
+color:#22c55e;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="gameHeader">
+<h2>Memory Matching Game</h2>
+<p>Moves: <span id="moves">0</span></p>
+<p>Time: <span id="timer">0</span> seconds</p>
+</div>
+
+<div id="gameBoard"></div>
+
+<div id="winMessage">
+<h2>You Win! 🎉</h2>
+</div>
+
+<audio id="matchSound" src="match.mp3"></audio>
+<audio id="wrongSound" src="wrong.mp3"></audio>
+
+<script>
+$(document).ready(function(){
+let symbols = ["🍎","🍌","🍇","🍓","🍒","🍉","🥝","🍍"];
+let cards = symbols.concat(symbols); 
+cards.sort(()=>0.5 - Math.random());
+let flippedCards = [];
+let matchedPairs = 0;
+let moves = 0;
+let time = 0;
+let timerStarted = false;
+let timer = setInterval(function(){
+if(timerStarted){
+time++;
+$("#timer").text(time);
+}
+},1000);
+
+for(let i=0;i<cards.length;i++){
+
+let card = $("<div></div>");
+card.addClass("card");
+card.attr("data-symbol",cards[i]);
+card.text("");
+
+$("#gameBoard").append(card);
+
+}
+$(".card").click(function(){
+if(!timerStarted){
+timerStarted=true;
+}
+
+if($(this).hasClass("flipped") || flippedCards.length==2){
+return;
+}
+$(this).addClass("flipped");
+$(this).text($(this).attr("data-symbol"));
+flippedCards.push($(this));
+if(flippedCards.length==2){
+moves++;
+$("#moves").text(moves);
+let card1 = flippedCards[0];
+let card2 = flippedCards[1];
+if(card1.attr("data-symbol") == card2.attr("data-symbol")){
+document.getElementById("matchSound").play();
+matchedPairs++;
+flippedCards=[];
+if(matchedPairs == symbols.length){
+$("#winMessage").fadeIn();
+clearInterval(timer);
+}
+}
+else{
+document.getElementById("wrongSound").play();
+setTimeout(function(){
+card1.removeClass("flipped").text("");
+card2.removeClass("flipped").text("");
+flippedCards=[];
+},1000);
+}
+}
+});
+});
+</script>
+</body>
+</html>
